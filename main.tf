@@ -7,9 +7,9 @@ terraform {
   }
 
   backend "azurerm" {
-    resource_group_name  = "StorageRG"
-    storage_account_name = "wirerttaskboardstorage"
-    container_name       = "taskboardstoragecontainer"
+    resource_group_name  = azurerm_resource_group.taskboardrg.name
+    storage_account_name = azurerm_storage_account.taskboardstorage.name
+    container_name       = azurerm_storage_container.taskboardstoragecontainer.name
     key                  = "terraform.tfstate"
   }
 }
@@ -27,6 +27,20 @@ resource "random_integer" "ri" {
 resource "azurerm_resource_group" "taskboardrg" {
   name     = "${var.resource_group_name}${random_integer.ri.result}"
   location = var.resource_group_location
+}
+
+resource "azurerm_storage_account" "taskboardstorage" {
+  name                     = "taskboardstorage${random_integer.ri.result}"
+  resource_group_name      = azurerm_resource_group.taskboardrg.name
+  location                 = azurerm_resource_group.taskboardrg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_storage_container" "taskboardstoragecontainer" {
+  name                  = "taskboardstoragecontainer"
+  storage_account_id    = azurerm_storage_account.taskboardstorage.id
+  container_access_type = "private"
 }
 
 resource "azurerm_service_plan" "taskboardsp" {
