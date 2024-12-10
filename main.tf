@@ -1,9 +1,16 @@
 terraform {
   required_providers {
-    azurerm = {     
+    azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.11.0" 
+      version = "4.11.0"
     }
+  }
+
+  backend "azurerm" {
+    resource_group_name  = "StorageRG"
+    storage_account_name = "wirerttaskboardstorage"
+    container_name       = "taskboardstoragecontainer"
+    key                  = "terraform.tfstate"
   }
 }
 
@@ -43,7 +50,7 @@ resource "azurerm_linux_web_app" "taskboardlwa" {
 
     always_on = false
   }
-   connection_string {
+  connection_string {
     name  = "DefaultConnection"
     type  = "SQLAzure"
     value = "Data Source=tcp:${azurerm_mssql_server.sqlserverkn.fully_qualified_domain_name},1433;Initial Catalog=${azurerm_mssql_database.taskboarddb.name};User ID=${azurerm_mssql_server.sqlserverkn.administrator_login};Password=${azurerm_mssql_server.sqlserverkn.administrator_login_password};Trusted_Connection=False; MultipleActiveResultSets=True;"
@@ -77,9 +84,9 @@ resource "azurerm_mssql_firewall_rule" "sqlserverfr" {
 }
 
 resource "azurerm_app_service_source_control" "taskboardassc" {
-  app_id   = azurerm_linux_web_app.taskboardlwa.id
-  repo_url = var.repo_url
-  branch   = var.branch_name
+  app_id                 = azurerm_linux_web_app.taskboardlwa.id
+  repo_url               = var.repo_url
+  branch                 = var.branch_name
   use_manual_integration = true
 }
 
